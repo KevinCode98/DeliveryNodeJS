@@ -133,5 +133,27 @@ module.exports = {
                 error: error
             });
         }
+    },
+
+
+    async findByDeliveryAndStatus(req, res, next) {
+        try {
+            const status = req.params.status;
+            const id_delivery = req.params.id_delivery;
+
+            let data = await Order.findByDeliveryAndStatus(id_delivery, status);
+
+            data.forEach(d => {
+                d.timestamp = timeRelative(new Date().getTime(), d.timestamp);
+            })
+            return res.status(200).json(data);
+        } catch (error) {
+            console.log(`Error ${error}`);
+            return res.status(501).json({
+                success: false,
+                message: 'Hubo un error al tratar de obtener por estado',
+                error: error
+            });
+        }
     }
 }
