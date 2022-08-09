@@ -3,7 +3,6 @@ const db = require('../config/config')
 const Order = {}
 
 Order.findByClientAndStatus = (id_client, status) => {
-    console.log(status)
     const sql = `
         SELECT O.id,
                O.id_client,
@@ -26,6 +25,12 @@ Order.findByClientAndStatus = (id_client, status) => {
                            )
                    ) AS products,
                JSON_BUILD_OBJECT(
+                       'id', U2.id,
+                       'name', U2.name,
+                       'lastname', U2.lastname,
+                       'image', U2.image
+                   ) AS delivery,
+               JSON_BUILD_OBJECT(
                        'id', U.id,
                        'name', U.name,
                        'lastname', U.lastname,
@@ -41,23 +46,23 @@ Order.findByClientAndStatus = (id_client, status) => {
         FROM orders AS O
                  INNER JOIN users AS U
                             ON O.id_client = U.id
+                 LEFT JOIN users as U2
+                           ON O.id_delivery = U2.id
                  INNER JOIN address AS A
                             ON A.id = O.id_address
                  INNER JOIN order_has_products AS OHP
                             ON OHP.id_order = O.id
                  INNER JOIN products as P
                             ON P.id = OHP.id_product
-        WHERE O.id_client = $1
-          AND O.status = $2
-        GROUP BY O.id, U.id, A.id
-    ORDER BY O.timestamp DESC
+        WHERE O.id_client = $1 AND O.status = $2
+        GROUP BY O.id, U.id, A.id, U2.id
+        ORDER BY O.timestamp DESC
     `;
 
     return db.manyOrNone(sql, [id_client, status]);
 }
 
 Order.findByStatus = (status) => {
-    console.log(status)
     const sql = `
         SELECT O.id,
                O.id_client,
@@ -80,6 +85,12 @@ Order.findByStatus = (status) => {
                            )
                    ) AS products,
                JSON_BUILD_OBJECT(
+                       'id', U2.id,
+                       'name', U2.name,
+                       'lastname', U2.lastname,
+                       'image', U2.image
+                   ) AS delivery,
+               JSON_BUILD_OBJECT(
                        'id', U.id,
                        'name', U.name,
                        'lastname', U.lastname,
@@ -95,6 +106,8 @@ Order.findByStatus = (status) => {
         FROM orders AS O
                  INNER JOIN users AS U
                             ON O.id_client = U.id
+                 LEFT JOIN users as U2
+                           ON O.id_delivery = U2.id
                  INNER JOIN address AS A
                             ON A.id = O.id_address
                  INNER JOIN order_has_products AS OHP
@@ -102,7 +115,7 @@ Order.findByStatus = (status) => {
                  INNER JOIN products as P
                             ON P.id = OHP.id_product
         WHERE O.status = $1
-        GROUP BY O.id, U.id, A.id
+        GROUP BY O.id, U.id, A.id, U2.id
         ORDER BY O.timestamp DESC
     `;
 
@@ -127,6 +140,27 @@ Order.create = (order) => {
         new Date(),
         new Date()
     ]);
+}
+
+Order.update = (order) => {
+    const sql = `
+        UPDATE orders
+        SET id_client=$2,
+            id_address=$3,
+            id_delivery=$4,
+            status= $5,
+            updated_at= $6
+        WHERE id = $1
+    `;
+
+    return db.none(sql, [
+        order.id,
+        order.id_client,
+        order.id_address,
+        order.id_delivery,
+        order.status,
+        new Date()
+    ])
 }
 
 module.exports = Order;

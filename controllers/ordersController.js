@@ -6,6 +6,7 @@ module.exports = {
     async create(req, res, next) {
         try {
             const order = req.body;
+            order.status = 'PAGADO';
             const data = await Order.create(order);
 
             for (const product of order.products) {
@@ -18,6 +19,69 @@ module.exports = {
                 data: {
                     'id': data.id
                 }
+            })
+
+        } catch (error) {
+            console.log(`Error ${error}`);
+            return res.status(501).json({
+                success: false,
+                message: 'Hubo un error creando la orden',
+                error: error
+            });
+        }
+    },
+
+    async updateToDispatched(req, res, next) {
+        try {
+            const order = req.body;
+            order.status = 'DESPACHADO';
+            await Order.update(order);
+
+            return res.status(200).json({
+                success: true,
+                message: 'La orden se actualizo correctamente'
+            })
+
+        } catch (error) {
+            console.log(`Error ${error}`);
+            return res.status(501).json({
+                success: false,
+                message: 'Hubo un error creando la orden',
+                error: error
+            });
+        }
+    },
+
+    async updateToOnTheWay(req, res, next) {
+        try {
+            const order = req.body;
+            order.status = 'EN CAMINO';
+            await Order.update(order);
+
+            return res.status(200).json({
+                success: true,
+                message: 'La orden se actualizo correctamente'
+            })
+
+        } catch (error) {
+            console.log(`Error ${error}`);
+            return res.status(501).json({
+                success: false,
+                message: 'Hubo un error creando la orden',
+                error: error
+            });
+        }
+    },
+
+    async updateToDelivered(req, res, next) {
+        try {
+            const order = req.body;
+            order.status = 'ENTREGADO';
+            await Order.update(order);
+
+            return res.status(200).json({
+                success: true,
+                message: 'La orden se actualizo correctamente'
             })
 
         } catch (error) {

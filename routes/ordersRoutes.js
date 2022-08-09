@@ -14,4 +14,12 @@ module.exports = (app) => {
     app.post('/api/orders/create', OrdersController.create);
 
     // Actualizar datos
+    app.put('/api/orders/updateToDispatched', passport.authenticate('jwt', {session: false}),
+        OrdersController.updateToDispatched);
+
+    app.put('/api/orders/updateToOnWay', passport.authenticate('jwt', {session: false}),
+        OrdersController.updateToOnTheWay);
+
+    app.put('/api/orders/updateToDelivered', passport.authenticate('jwt', {session: false}),
+        OrdersController.updateToDelivered);
 }
