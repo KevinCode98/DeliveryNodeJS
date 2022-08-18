@@ -1,3 +1,5 @@
+const ordersDeliverySocket = require('./sockets/orders_delivery_sockets');
+const serviceAccount = require('./serviceAccountKey.json');
 const express = require('express');
 const http = require('http');
 const logger = require('morgan');
@@ -5,7 +7,9 @@ const cors = require('cors');
 const passport = require('passport');
 const multer = require('multer');
 const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey.json');
+const app = express();
+const server = http.createServer(app);
+const io = require('socket.io')(server)
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
@@ -23,8 +27,6 @@ const address = require('./routes/addressRoutes');
 const orders = require('./routes/ordersRoutes');
 
 
-const app = express();
-const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 
 app.use(logger('dev'));
@@ -50,7 +52,10 @@ products(app, upload);
 address(app);
 orders(app);
 
-server.listen('3000', "10.56.0.154" || 'localhost', function () {
+// LLamada a los sockets
+ordersDeliverySocket(io)
+
+server.listen('3000', "192.168.0.153" || 'localhost', function () {
     console.log('Aplicacion de NodeJS ' + port + ' Iniciada...');
 });
 
